@@ -1,0 +1,22 @@
+name: Vebinar Praktirum workflow
+
+on: [push]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: executing remote ssh commands to deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd project/infra
+            git pull
+            docker compose stop
+            docker compose up -d --build
+            docker compose exec web python manage.py migrate
+            docker compose exec web python manage.py collectstatic --noinput
+
